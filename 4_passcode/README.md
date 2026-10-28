@@ -147,7 +147,7 @@ conn.send(payload)
 conn.interactive()
 ```
 
-**Final Solution**
+**Final Solution:**
 
 ```bash
 ./exploit.py               
