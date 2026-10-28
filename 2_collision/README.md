@@ -1,6 +1,6 @@
 # pwnable.kr: collision
 
-## Analysis
+**Source Code**
 
 ```c
 #include <stdio.h>
@@ -36,56 +36,15 @@ int main(int argc, char* argv[]){
         return 0;
 }
 ```
+The main goal for this program is that the returned value of `check_password` needs to equal to `hashcode`.
 
-### Func: main
-
-- First, starts by checking if there is less than two parameters (`./col argv[1]`):
-
-```c
-if(argc<2){
-    printf("usage : %s [passcode]\n", argv[0]);
-    return 0;
-}
-```
-
-- Secondly, checks if `argv[1]` is 20 bytes:
+The function `check_password` type casts `argv[1]` from `char` to `int`:
 
 ```c
-if(strlen(argv[1]) != 20){
-    printf("passcode length should be 20 bytes\n");
-    return 0;
-}
+int* ip = (int*)p;
 ```
 
-- Thirdly, gives the flag if `hashcode` (`0x21DD09EC`) equals the returned value of `check_password( argv[1] )`:
-
-```c
-if(hashcode == check_password( argv[1] )){
-    setregid(getegid(), getegid());
-    system("/bin/cat flag");
-    return 0;
-}
-else
-    printf("wrong passcode.\n");
-return 0;
-```
-
-**Understanding:**
-
-- Needs one argument.
-- Input needs to be 20 bytes long.
-- Returned value of `check_password` needs to equal to `hashcode`.
-
-### Func: check_password
-
-- Firstly, `argv[1]` will be type casted from a `char` type to an `int` type:
-
-```c
-unsigned long check_password(const char* p){
-        int* ip = (int*)p;
-```
-
-Secondly, 4 bytes from `ip[i]` will be incremented each five times, adding it into `res`. After looping, it returns the value of `res` back to `main`:
+Then 4 bytes from `ip[i]` will be incremented five times each, adding its sum to `res`:
 
 ```c
 int i;
@@ -95,17 +54,11 @@ for(i=0; i<5; i++){
 }
 return res;
 ```
-**Understanding:**
 
-- Type casts `p` from a `const` to an `int`.
-- Increments through the 20 bytes (`ip[i]` 4 bytes each) five times; adding it into res every loop.
-- Returns `res`'s value back to `main`, at the end of the function.
 
-### Debugging check_password
+Debugging with `argv[1]` being `12345678901234567890`:
 
-Using `./col 12345678901234567890`:
-
-#### First increment (`ip[1]`):
+**First increment (`ip[1]`):**
 
 1. Stores `argv[1]` into `EAX`.
 2. Reads the first 4 bytes (`1234`) from `ip[1]` of array (`12345678901234567890`).
@@ -119,7 +72,7 @@ Using `./col 12345678901234567890`:
 4) 0x56556227 <check_password+58>    add    dword ptr [ebp - 4], 1         [0xffffce54] <= 1 (0 + 1)
 ```
 
-#### Last increment (`ip[5]`):
+**Last increment (`ip[5]`):**
 
 1. The value of `ip[5]` (`7890`).
 2. Adds final value to `res`.
@@ -131,16 +84,14 @@ Using `./col 12345678901234567890`:
 3) 0x56556227 <check_password+58>    add    dword ptr [ebp - 4], 1         [0xffffce54] <= 5 (4 + 1)
 ```
 
-### Math 
-
-The logic behind the sum of `res`:
+**The logic behind the sum of `res`:**
 
 - `hashcode` needs to equal `res`.
 - `hashcode` / 5 equals `ip[1]`.
 
 > The 5th value needs to be different due to 0x21DD09EC / 5 = 113626824.8.
 
-#### Using python2:
+**Using python2:**
 
 Getting the 5th value:
 
@@ -162,14 +113,14 @@ Getting the 5th value:
 '0x5f5e104'
 ```
 
-#### Putting it all together:
+Putting everything together we have `0x1be728e8` being multiplied by 4 and `0x21dd09ec` being the remainder:
 
 ```
 0x06f9ca3a * 4 = 0x1be728e8
 0x1be728e8 + 0x05f5e104 = 0x21dd09ec
 ```
 
-## Final Solution
+**Final Solution:**
 
 ```bash
 ./col $(python2 -c "print '\x3a\xca\xf9\x06' * 4 + '\x04\xe1\xf5\x05'")
