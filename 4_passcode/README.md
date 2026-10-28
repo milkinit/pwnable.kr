@@ -76,7 +76,7 @@ scanf("%100s", name);
 printf("Welcome %s!\n", name);
 ```
 
-The memory location for the passcodes are located at offsets `ebp-0x10` (`passcode1`) and `ebp-0xc` (`passcode2`):
+The memory location for the passcodes are located at `ebp-0x10` (`passcode1`) and `ebp-0xc` (`passcode2`):
 
 ```assembly
 804927d:       81 7d f0 e6 28 05 00    cmpl   $0x528e6,-0x10(%ebp)
@@ -85,13 +85,13 @@ The memory location for the passcodes are located at offsets `ebp-0x10` (`passco
 804928d:       75 3f                   jne    80492ce <login+0xd8>
 ```
 
-For buffer `char name[100];`, it would be located at offset `ebp-0x70`:
+For buffer `char name[100];`, it would be located at `ebp-0x70`:
 
 ```assembly
 8049324:       8d 45 90                lea    -0x70(%ebp),%eax
 ```
 
-The offsets `ebp-0x70` and `ebp-0x10` overlap:
+The locations `ebp-0x70` and `ebp-0x10` overlap:
 
 ```python
 >>> int(0x10)
