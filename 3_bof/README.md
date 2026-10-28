@@ -97,7 +97,7 @@ conn.sendline('cat flag')
 conn.interactive()
 ```
 
-**Final Solution**
+**Final Solution:**
 
 ```bash
 [+] Opening connection to pwnable.kr on port 10003: Done
